@@ -7,3 +7,4 @@ jinja2
 sqlalchemy
 psycopg2-binary
 passlib[bcrypt]
+email-validator
