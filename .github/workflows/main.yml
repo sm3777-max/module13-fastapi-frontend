@@ -45,7 +45,6 @@ jobs:
       run: |
         playwright install
 
-    # --- THIS IS THE CORRECTED STEP ---
     - name: Run E2E and Integration Tests
       env:
         POSTGRES_USER: testuser
@@ -62,7 +61,6 @@ jobs:
         
         # 3. Run pytest, passing the base-url for E2E tests
         pytest --base-url http://localhost:8000
-    # --- END CORRECTED STEP ---
 
   # ---------------------------------
   # JOB 2: BUILD & PUSH DOCKER IMAGE
@@ -87,4 +85,6 @@ jobs:
         context: .
         file: ./Dockerfile
         push: true
-        tags: sm3777-max/module10-fastapi-secure:latest
+        
+        # --- THIS LINE IS NOW CORRECTED ---
+        tags: sm3777/module10-fastapi-secure:latest
