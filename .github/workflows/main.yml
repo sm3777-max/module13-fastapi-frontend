@@ -41,13 +41,12 @@ jobs:
         pip install -r requirements.txt
         pip install pytest
 
-    # --- THIS IS THE NEWLY ADDED STEP ---
     - name: Install Playwright Browsers
       run: |
         playwright install
-    # -----------------------------------
 
-    - name: Run Tests
+    # --- THIS IS THE CORRECTED STEP ---
+    - name: Run E2E and Integration Tests
       env:
         POSTGRES_USER: testuser
         POSTGRES_PASSWORD: testpassword
@@ -55,7 +54,15 @@ jobs:
         POSTGRES_HOST: localhost
         POSTGRES_PORT: 5432
       run: |
-        pytest
+        # 1. Start the FastAPI app in the background
+        uvicorn app.main:app --host 0.0.0.0 --port 8000 &
+        
+        # 2. Wait a few seconds for the app to start up
+        sleep 5
+        
+        # 3. Run pytest, passing the base-url for E2E tests
+        pytest --base-url http://localhost:8000
+    # --- END CORRECTED STEP ---
 
   # ---------------------------------
   # JOB 2: BUILD & PUSH DOCKER IMAGE
@@ -80,5 +87,4 @@ jobs:
         context: .
         file: ./Dockerfile
         push: true
-        # This tag is updated to your specific repo
         tags: sm3777-max/module10-fastapi-secure:latest

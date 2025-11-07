@@ -1,63 +1,52 @@
+# in tests/test_integration.py
 from fastapi.testclient import TestClient
-from app.main import app  # Import your FastAPI app
+from app.main import app
+from app.database import SessionLocal, engine, Base
+import pytest
 
-# Create a client to interact with your app
+# Use a test client
 client = TestClient(app)
 
-def test_root_endpoint():
-    """
-    Test the root (/) endpoint.
-    It should return 200 OK and an HTML page.
-    """
-    response = client.get("/")
-    assert response.status_code == 200
-    assert response.headers['content-type'] == 'text/html; charset=utf-8'
-    assert "FastAPI Calculator" in response.text
+@pytest.fixture(scope="module")
+def db():
+    """Fixture to create and clean up database tables for tests."""
+    # Create the tables
+    Base.metadata.create_all(bind=engine)
+    yield SessionLocal()
+    # Drop the tables after tests
+    Base.metadata.drop_all(bind=engine)
 
-def test_add_endpoint():
-    """Test the /add endpoint using POST with a JSON body."""
-    response = client.post("/add", json={"a": 5, "b": 3})
-    assert response.status_code == 200
-    assert response.json() == {"result": 8}
+def test_create_user_success(db):
+    """Test creating a new user successfully."""
+    response = client.post("/users/", json={
+        "username": "testuser",
+        "email": "test@example.com",
+        "password": "password123"
+    })
+    assert response.status_code == 201
+    data = response.json()
+    assert data["email"] == "test@example.com"
+    assert data["username"] == "testuser"
+    assert "id" in data
+    assert "password_hash" not in data # Check that hash isn't returned
 
-def test_subtract_endpoint():
-    """Test the /subtract endpoint using POST with a JSON body."""
-    response = client.post("/subtract", json={"a": 10, "b": 4})
-    assert response.status_code == 200
-    assert response.json() == {"result": 6}
-
-def test_multiply_endpoint():
-    """Test the /multiply endpoint using POST with a JSON body."""
-    response = client.post("/multiply", json={"a": 6, "b": 2})
-    assert response.status_code == 200
-    assert response.json() == {"result": 12}
-
-def test_divide_endpoint():
-    """Test the /divide endpoint using POST with a JSON body."""
-    response = client.post("/divide", json={"a": 20, "b": 5})
-    assert response.status_code == 200
-    assert response.json() == {"result": 4}
-
-def test_divide_by_zero_endpoint():
-    """
-    Test the /divide endpoint for division by zero.
-    It should return a 400 Bad Request status.
-    """
-    response = client.post("/divide", json={"a": 10, "b": 0})
-    
-    # Check that the status code is 400 (Bad Request)
+def test_create_user_duplicate_email(db):
+    """Test creating a user with a duplicate email."""
+    # This user is created from the previous test
+    response = client.post("/users/", json={
+        "username": "newuser",
+        "email": "test@example.com", # Duplicate email
+        "password": "password123"
+    })
     assert response.status_code == 400
-    
-    # Check that the JSON response contains our error detail
-    assert "detail" in response.json()
-    assert response.json()["detail"] == "Cannot divide by zero"
+    assert response.json()["detail"] == "Email already registered."
 
-def test_invalid_parameters():
-    """
-    Test sending invalid data (strings instead of numbers).
-    Pydantic should catch this and return a 422 Unprocessable Entity.
-    """
-    response = client.post("/add", json={"a": "ten", "b": "five"})
-    
-    # Check that the status code is 422
-    assert response.status_code == 422
+def test_create_user_duplicate_username(db):
+    """Test creating a user with a duplicate username."""
+    response = client.post("/users/", json={
+        "username": "testuser", # Duplicate username
+        "email": "new@example.com",
+        "password": "password123"
+    })
+    assert response.status_code == 400
+    assert response.json()["detail"] == "Username already taken."
