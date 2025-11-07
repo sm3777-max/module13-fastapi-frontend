@@ -1,85 +1,48 @@
-import logging
-from fastapi import FastAPI, HTTPException, Request
-from fastapi.responses import HTMLResponse
-from fastapi.templating import Jinja2Templates
-from pydantic import BaseModel
+# in app/main.py
 
-# Import your math functions
-from .operations import add_op, subtract_op, multiply_op, divide_op
+from fastapi import FastAPI, Depends, HTTPException, status
+from sqlalchemy.orm import Session
 
-# --- Logging Configuration ---
-# (This assumes your logging is already configured as before)
-# If not, add your logging.basicConfig here.
-logger = logging.getLogger(__name__)
+# Import all our new modules
+from . import crud, models, schemas, database
+
+# --- THIS IS NEW ---
+# This command tells SQLAlchemy to create all the tables defined in
+# app/models.py (like 'users' and 'calculations') if they don't
+# already exist in the database.
+models.Base.metadata.create_all(bind=database.engine)
+# --- END NEW ---
 
 app = FastAPI()
 
-# --- Templates Section ---
-templates = Jinja2Templates(directory="app/templates")
+# --- THIS IS YOUR NEW SECURE USER ENDPOINT ---
+@app.post("/users/", response_model=schemas.UserRead, status_code=status.HTTP_201_CREATED)
+def create_new_user(user: schemas.UserCreate, db: Session = Depends(database.get_db)):
+    
+    # Check if a user with this email already exists
+    db_user_email = crud.get_user_by_email(db, email=user.email)
+    if db_user_email:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Email already registered."
+        )
+    
+    # Check if a user with this username already exists
+    db_user_username = crud.get_user_by_username(db, username=user.username)
+    if db_user_username:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Username already taken."
+        )
+    
+    # If all checks pass, create the new user
+    return crud.create_user(db=db, user=user)
+# --- END NEW ENDPOINT ---
 
-# --- Pydantic Model ---
-# This defines the JSON structure: {"a": 10.0, "b": 20.0}
-class Numbers(BaseModel):
-    a: float
-    b: float
 
-# --- Root Endpoint (FIXED) ---
-@app.get("/", response_class=HTMLResponse)
-def read_root(request: Request):
-    """Serves the main HTML calculator page."""
-    # This is the corrected order to fix the DeprecationWarning
-    return templates.TemplateResponse(request, "index.html")
+@app.get("/")
+def read_root():
+    return {"message": "Welcome to the FastAPI Calculator (Module 10)"}
 
-# --- API Endpoints (FIXED) ---
-
-@app.post("/add")
-def add_numbers(nums: Numbers):
-    """Adds two numbers from a JSON body."""
-    try:
-        result = add_op(nums.a, nums.b)
-        logger.info(f"Add operation: {nums.a} + {nums.b} = {result}")
-        return {"result": result}
-    except Exception as e:
-        logger.error(f"Error in add operation: {e}")
-        raise HTTPException(status_code=500, detail="Internal server error")
-
-@app.post("/subtract")
-def subtract_numbers(nums: Numbers):
-    """Subtracts two numbers from a JSON body."""
-    try:
-        result = subtract_op(nums.a, nums.b)
-        logger.info(f"Subtract operation: {nums.a} - {nums.b} = {result}")
-        return {"result": result}
-    except Exception as e:
-        logger.error(f"Error in subtract operation: {e}")
-        raise HTTPException(status_code=500, detail="Internal server error")
-
-@app.post("/multiply")
-def multiply_numbers(nums: Numbers):
-    """Multiplies two numbers from a JSON body."""
-    try:
-        result = multiply_op(nums.a, nums.b)
-        logger.info(f"Multiply operation: {nums.a} * {nums.b} = {result}")
-        return {"result": result}
-    except Exception as e:
-        logger.error(f"Error in multiply operation: {e}")
-        raise HTTPException(status_code=500, detail="Internal server error")
-
-@app.post("/divide")
-def divide_numbers(nums: Numbers):
-    """
-    Divides two numbers from a JSON body.
-    Handles division by zero by raising a 400 error.
-    """
-    try:
-        result = divide_op(nums.a, nums.b)
-        logger.info(f"Divide operation: {nums.a} / {nums.b} = {result}")
-        return {"result": result}
-    except ValueError as e:
-        # This catches the "Cannot divide by zero" from operations.py
-        logger.warning(f"Division by zero attempt: {nums.a} / {nums.b}")
-        # This raises a 400 error, which your tests expect
-        raise HTTPException(status_code=400, detail=str(e))
-    except Exception as e:
-        logger.error(f"Error in divide operation: {e}")
-        raise HTTPException(status_code=500, detail="Internal server error")
+# (You can add your calculator endpoints here later,
+# but now they will be linked to a user_id)

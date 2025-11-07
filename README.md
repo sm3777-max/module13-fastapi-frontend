@@ -1,17 +1,17 @@
-# FastAPI Calculator CI Project
+# Module 10: Secure FastAPI User Model & CI/CD
 
-This is a project for Python for Web API Development to demonstrate a CI/CD pipeline for a simple FastAPI calculator application.
-It includes:
-* A FastAPI application with basic arithmetic operations.
-* Logging for all endpoints.
-* Unit, Integration, and End-to-End (Playwright) tests.
-* A GitHub Actions workflow to automate testing.
-* A Docker Compose setup to run the app with PostgreSQL and pgAdmin.
+This project demonstrates a secure user model for a FastAPI application using SQLAlchemy and password hashing. It is built on the Module 9 project and adds a full CI/CD pipeline with GitHub Actions and Docker Hub.
+
+## Project Features
+* **Secure User Model**: SQLAlchemy `User` model with `username`, `email`, and `password_hash`.
+* **Password Hashing**: Uses `bcrypt` for secure password hashing and verification.
+* **Pydantic Schemas**: `UserCreate` and `UserRead` schemas to safely handle data.
+* **CI/CD Pipeline**: Automates testing and deployment to Docker Hub.
+* **Docker Compose**: Runs the full stack (FastAPI, PostgreSQL, pgAdmin).
 
 ---
 
 ## 🐳 How to Run with Docker
-
 This is the easiest way to run the full application stack, including the database.
 
 1.  Make sure you have Docker Desktop running.
@@ -25,20 +25,40 @@ This is the easiest way to run the full application stack, including the databas
 
 ---
 
-## 🐍 How to Run Locally (Original Setup)
+## 🧪 How to Run Tests Locally
+You can run the unit and integration tests on your local machine.
 
-This method runs the app directly on your machine using a Python virtual environment.
-
-1.  Clone the repository:
-    ```bash
-    git clone <YOUR_REPO_URL_HERE>
-    cd fastapi-calculator-ci
-    ```
-2.  Create and activate a virtual environment:
+1.  Create and activate a virtual environment:
     ```bash
     python3 -m venv venv
     source venv/bin/activate
     ```
+2.  Install all dependencies:
+    ```bash
+    pip install -r requirements.txt
+    ```
+3.  Run `pytest`:
+    ```bash
+    pytest
+    ```
+    *(Note: Integration tests may fail locally if you don't have a database running with the correct environment variables.)*
+
+---
+
+## 🚢 Docker Hub Repository
+
+The CI/CD pipeline automatically builds and pushes the Docker image for this project to Docker Hub.
+
+You can find the repository here:
+**[https://hub.docker.com/r/sm3777-max/module10-fastapi-secure](https://hub.docker.com/r/sm3777-max/module10-fastapi-secure)**
+
+---
+
+## 🐍 How to Run Locally (Original Setup)
+This method runs the app directly on your machine using a Python virtual environment.
+
+1.  Clone the repository.
+2.  Create and activate a virtual environment.
 3.  Install dependencies:
     ```bash
     pip install -r requirements.txt
@@ -48,15 +68,3 @@ This method runs the app directly on your machine using a Python virtual environ
     ```bash
     uvicorn app.main:app --reload
     ```
-5.  The application will be running at **`http://127.0.0.1:8000`**.
-
----
-
-## 🧪 How to Run Tests
-
-### Run Unit and Integration Tests
-
-These tests do not require the application to be running.
-
-```bash
-pytest tests/test_unit.py tests/test_integration.py

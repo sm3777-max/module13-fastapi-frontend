@@ -33,3 +33,30 @@ def test_divide():
 def test_divide_by_zero():
     with pytest.raises(ValueError):
         divide_op(10, 0)
+        # in tests/test_unit.py
+
+# --- Add this new import ---
+from app.security import get_password_hash, verify_password
+
+# ... (any existing calculator unit tests can stay) ...
+
+
+# --- Add this new test function ---
+def test_password_hashing():
+    """
+    Tests the password hashing and verification functions.
+    """
+    password = "mysecretpassword123"
+    
+    # Test that a hash is created
+    hashed_password = get_password_hash(password)
+    assert hashed_password is not None
+    
+    # Test that the hash is not the same as the original password
+    assert hashed_password != password
+    
+    # Test that verification works for the correct password
+    assert verify_password(password, hashed_password) == True
+    
+    # Test that verification fails for an incorrect password
+    assert verify_password("wrongpassword", hashed_password) == False
