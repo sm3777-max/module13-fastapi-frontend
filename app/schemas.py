@@ -1,6 +1,6 @@
 # in app/schemas.py
 
-from pydantic import BaseModel, EmailStr, field_validator, ConfigDict
+from pydantic import BaseModel, EmailStr, ConfigDict, model_validator # <-- Import model_validator
 from datetime import datetime
 from .logic import OperationType # Import our new Enum
 
@@ -30,16 +30,19 @@ class CalculationBase(BaseModel):
 
 class CalculationCreate(CalculationBase):
     
-    # This is the Pydantic validator
-    @field_validator('b')
-    def check_division_by_zero(cls, b, values):
+    # --- THIS IS THE FIX ---
+    # We use a model_validator (mode='after') to check fields
+    # after they have all been individually validated.
+    
+    @model_validator(mode='after')
+    def check_division_by_zero(self) -> 'CalculationCreate':
         """
-        Check if the operation is 'divide' and if 'b' is zero.
+        After all fields are validated, check for division by zero.
         """
-        # 'values.data' holds the values already validated
-        if 'type' in values.data and values.data['type'] == OperationType.DIVIDE and b == 0:
+        if self.type == OperationType.DIVIDE and self.b == 0:
             raise ValueError("Cannot divide by zero")
-        return b
+        return self
+    # --- END FIX ---
 
 class CalculationRead(CalculationBase):
     id: int
