@@ -41,7 +41,6 @@ jobs:
         pip install -r requirements.txt
         pip install pytest
 
-    # --- THIS IS THE CORRECTED "RUN TESTS" STEP ---
     - name: Run Tests
       env:
         POSTGRES_USER: testuser
@@ -51,7 +50,6 @@ jobs:
         POSTGRES_PORT: 5432
       run: |
         pytest
-    # --- END CORRECTED STEP ---
 
   # ---------------------------------
   # JOB 2: BUILD & PUSH DOCKER IMAGE
@@ -77,5 +75,5 @@ jobs:
         file: ./Dockerfile
         push: true
         
-        # --- Make sure this tag is correct for your Module 11 repo ---
-        tags: sm3777/module11-fastapi-calculator:latest
+        # --- UPDATED TAG FOR MODULE 12 ---
+        tags: sm3777/module12-fastapi-final:latest

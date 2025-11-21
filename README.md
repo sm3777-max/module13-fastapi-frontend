@@ -1,70 +1,46 @@
-# Module 11: FastAPI Calculator Model & Validation
+# Module 12: Final Backend API (Users & Calculations)
 
-This project defines the database models and business logic for a FastAPI calculator. It builds on Module 10 by adding a SQLAlchemy `Calculation` model, Pydantic validation (including for division by zero), and a factory pattern for the core logic.
+This project completes the backend logic for the FastAPI Calculator. It integrates User Authentication (Registration/Login) and full CRUD (BREAD) operations for Calculations, backed by a PostgreSQL database.
 
 ## Project Features
-* **Secure User Model**: SQLAlchemy `User` model with `username`, `email`, and `password_hash`.
-* **Calculation Model**: SQLAlchemy `Calculation` model linked to users via a foreign key.
-* **Pydantic Schemas**: Validates all incoming data, including a custom check to prevent division by zero.
-* **Factory Pattern**: Uses a factory to easily select the correct mathematical operation (add, subtract, etc.).
-* **CI/CD Pipeline**: Automates testing and deployment to Docker Hub.
-* **Docker Compose**: Runs the full stack (FastAPI, PostgreSQL, pgAdmin).
+* **User Authentication**: secure endpoints for `/users/register` and `/users/login`.
+* **Calculation CRUD**: Complete API to Browse, Read, Edit, Add, and Delete calculations.
+* **Database Integration**: Uses SQLAlchemy with a `User` and `Calculation` model (One-to-Many relationship).
+* **Automated Testing**: Integration tests for API endpoints and database logic.
+* **CI/CD**: GitHub Actions pipeline for automated testing and Docker Hub deployment.
 
 ---
 
 ## 🐳 How to Run with Docker
-This is the easiest way to run the full application stack, including the database.
-
 1.  Make sure you have Docker Desktop running.
 2.  Clone this repository.
 3.  From the project's root directory, run:
     ```bash
-    docker-compose up --build
+    docker compose up --build -d
     ```
-4.  The application will be running at **`http://127.0.0.1:8000`**.
-5.  pgAdmin (database manager) will be available at **`http://127.0.0.1:5050`**.
+4.  **Access the API Docs (Swagger UI):**
+    Open your browser to **[http://localhost:8000/docs](http://localhost:8000/docs)** to manually test the endpoints.
+5.  **Access pgAdmin:**
+    Go to `http://localhost:5050` (Email: `admin@example.com`, Password: `admin`).
 
 ---
 
 ## 🧪 How to Run Tests Locally
-You can run the unit and integration tests on your local machine.
+Integration tests require a running database.
 
-1.  Create and activate a virtual environment:
+1.  **Start the database container:**
     ```bash
-    python3 -m venv venv
-    source venv/bin/activate
+    docker compose up -d
     ```
-2.  Install all dependencies:
+2.  **Run pytest with the correct host:**
     ```bash
-    pip install -r requirements.txt
+    POSTGRES_HOST=localhost pytest
     ```
-3.  Run `pytest`:
-    ```bash
-    pytest
-    ```
-    *(Note: Integration tests require a running PostgreSQL database. The CI pipeline handles this automatically.)*
 
 ---
 
-## 🚢 Docker Hub Repository
+## ship: Docker Hub Repository
 
-The CI/CD pipeline automatically builds and pushes the Docker image for this project to Docker Hub.
+The CI/CD pipeline automatically builds and pushes the Docker image for this project.
 
-You can find the repository here:
-**[https://hub.docker.com/r/sm3777/module11-fastapi-calculator](https://hub.docker.com/r/sm3777/module11-fastapi-calculator)**
-
----
-
-## 🐍 How to Run Locally (Original Setup)
-This method runs the app directly on your machine using a Python virtual environment.
-
-1.  Clone the repository.
-2.  Create and activate a virtual environment.
-3.  Install dependencies:
-    ```bash
-    pip install -r requirements.txt
-    ```
-4.  Run the application:
-    ```bash
-    uvicorn app.main:app --reload
-    ```
+**Repository Link:** [https://hub.docker.com/r/sm3777/module12-fastapi-final](https://hub.docker.com/r/sm3777/module12-fastapi-final)
