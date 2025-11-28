@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login</title>
+    <style>body { font-family: sans-serif; padding: 2rem; }</style>
+</head>
+<body>
+    <h1>Login</h1>
+    <form id="loginForm">
+        <input type="text" id="username" placeholder="Email" required><br><br>
+        <input type="password" id="password" placeholder="Password" required><br><br>
+        <button type="submit">Login</button>
+    </form>
+    <p id="message"></p>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            // Note: OAuth2 expects 'username' and 'password' form fields
+            const formData = new FormData();
+            formData.append('username', document.getElementById('username').value);
+            formData.append('password', document.getElementById('password').value);
+
+            const response = await fetch('/users/login', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                // Store the JWT
+                localStorage.setItem('token', data.access_token);
+                document.getElementById('message').innerText = "Login Successful! Token stored.";
+                document.getElementById('message').style.color = "green";
+            } else {
+                document.getElementById('message').innerText = "Invalid credentials";
+                document.getElementById('message').style.color = "red";
+            }
+        });
+    </script>
+</body>
+</html>

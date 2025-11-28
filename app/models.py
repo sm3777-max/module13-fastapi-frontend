@@ -1,5 +1,3 @@
-# in app/models.py
-
 from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
@@ -14,7 +12,7 @@ class User(Base):
     password_hash = Column(String, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
-    # This relationship links a User to their Calculations
+    # Relationship to calculations (One-to-Many)
     calculations = relationship("Calculation", back_populates="owner")
 
 class Calculation(Base):
@@ -27,8 +25,8 @@ class Calculation(Base):
     result = Column(Float, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     
-    # This is the foreign key linking to the users table
+    # Foreign Key linking to User
     user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
 
-    # This links the calculation back to its 'owner' (the User)
+    # Relationship back to User
     owner = relationship("User", back_populates="calculations")

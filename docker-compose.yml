@@ -1,13 +1,16 @@
 version: '3.8'
 
 services:
+  # 1. The FastAPI Application Service
   app:
     build: .
-    # --- FIX: Run from parent directory so 'app' package exists ---
-    command: sh -c "cd .. && uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
-    # --------------------------------------------------------------
+    # --- CRITICAL FIX: Use the wait script as the entry command ---
+    # The script waits for 5432, then executes the uvicorn command.
+    command: sh -c "/app/wait-for-db.sh db 5432 uvicorn main:app --host 0.0.0.0 --port 8000 --reload"
+    # -------------------------------------------------------------
+    restart: on-failure
     volumes:
-      - ./app:/app
+      - .:/app
     ports:
       - "8000:8000"
     environment:
@@ -16,11 +19,15 @@ services:
       - POSTGRES_DB=fastapi_db
       - POSTGRES_HOST=db
       - POSTGRES_PORT=5432
+      # Pass DB credentials as environment variables for the wait script to use
+      - POSTGRES_DB=fastapi_db
+      - POSTGRES_PASSWORD=password
     depends_on:
       - db
     networks:
       - fastapi_net
 
+  # 2. The PostgreSQL Database Service
   db:
     image: postgres:15
     environment:
@@ -35,6 +42,7 @@ services:
       - fastapi_net
     restart: always
 
+  # 3. The pgAdmin Service
   pgadmin:
     image: dpage/pgadmin4
     environment:

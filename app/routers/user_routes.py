@@ -17,7 +17,7 @@ def register_user(user: schemas.UserCreate, db: Session = Depends(database.get_d
 
 @router.post("/login")
 def login_user(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(database.get_db)):
-    # Authenticate user
+    # 1. Check if user exists and password is correct
     user = crud.get_user_by_email(db, email=form_data.username)
     if not user or not security.verify_password(form_data.password, user.password_hash):
         raise HTTPException(
@@ -26,9 +26,12 @@ def login_user(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = D
             headers={"WWW-Authenticate": "Bearer"},
         )
     
-    # For this assignment, we return a simple success message and the email as a token placeholder
+    # 2. Create a REAL JWT Access Token
+    access_token = security.create_access_token(data={"sub": user.email})
+    
+    # 3. Return the token
     return {
-        "access_token": user.email, 
-        "token_type": "bearer", 
+        "access_token": access_token, 
+        "token_type": "bearer",
         "message": "Login successful"
     }

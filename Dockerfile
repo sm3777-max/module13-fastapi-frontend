@@ -1,13 +1,13 @@
-# 1. Use an official Python runtime as a parent image
 FROM python:3.10-slim
 
-# 2. Set the working directory in the container to /app
+# --- FIX: Install postgresql-client for the wait script ---
+RUN apt-get update && apt-get install -y postgresql-client && rm -rf /var/lib/apt/lists/*
+# ---------------------------------------------------------
+
 WORKDIR /app
 
-# 3. Copy requirements.txt and install dependencies
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# 4. Copy your application code from the local 'app' folder
-# into the container's /app directory (our WORKDIR)
-COPY ./app .
+# Copy all project files (including main.py, app/, and wait-for-db.sh)
+COPY . .

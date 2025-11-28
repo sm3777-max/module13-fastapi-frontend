@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register</title>
+    <style>
+        body { font-family: sans-serif; padding: 2rem; max-width: 500px; margin: 0 auto; }
+        input { width: 100%; padding: 8px; margin: 5px 0; box-sizing: border-box; }
+        button { width: 100%; padding: 10px; background-color: #4CAF50; color: white; border: none; cursor: pointer; }
+        button:hover { background-color: #45a049; }
+        #message { margin-top: 20px; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h1>Register</h1>
+    <form id="registerForm">
+        <label for="email">Email:</label>
+        <input type="email" id="email" placeholder="Enter email" required>
+
+        <label for="username">Username:</label>
+        <input type="text" id="username" placeholder="Enter username" required>
+
+        <label for="password">Password:</label>
+        <input type="password" id="password" placeholder="Password (min 4 chars)" required minlength="4">
+
+        <button type="submit">Register</button>
+    </form>
+    <p id="message"></p>
+
+    <script>
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const email = document.getElementById('email').value;
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const messageEl = document.getElementById('message');
+
+            messageEl.innerText = "Processing...";
+            messageEl.style.color = "black";
+
+            try {
+                // IMPORTANT: this path must match your FastAPI route
+                const response = await fetch('/users/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, username, password })
+                });
+
+                if (response.ok) {
+                    // Success Case – what the tests are expecting
+                    messageEl.innerText = "Registration Successful";
+                    messageEl.style.color = "green";
+                } else {
+                    // Error Case - Try to parse JSON, handle HTML (500 errors) fallback
+                    try {
+                        const data = await response.json();
+                        messageEl.innerText = "Error: " + (data.detail || JSON.stringify(data));
+                    } catch (err) {
+                        // If response wasn't JSON (likely a 500 server crash)
+                        messageEl.innerText = "Server Error: " + response.status;
+                    }
+                    messageEl.style.color = "red";
+                }
+            } catch (error) {
+                // Network Error (Server down, connection reset)
+                messageEl.innerText = "Network Error: " + error.message;
+                messageEl.style.color = "red";
+            }
+        });
+    </script>
+</body>
+</html>
