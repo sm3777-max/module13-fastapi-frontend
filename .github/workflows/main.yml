@@ -41,11 +41,9 @@ jobs:
         pip install -r requirements.txt
         pip install pytest
 
-    # --- NEW FOR MODULE 13: Install Browsers for E2E Tests ---
     - name: Install Playwright Browsers
       run: |
         playwright install
-    # ---------------------------------------------------------
 
     - name: Run Tests
       env:
@@ -55,14 +53,13 @@ jobs:
         POSTGRES_HOST: localhost
         POSTGRES_PORT: 5432
       run: |
-        # 1. Start the App in the Background
-        uvicorn app.main:app --host 0.0.0.0 --port 8000 &
+        # 1. Start the FastAPI app in the background (using corrected module name)
+        uvicorn main:app --host 0.0.0.0 --port 8000 & 
         
-        # 2. Wait for it to start
+        # 2. Wait a few seconds for the app to start up
         sleep 5
         
-        # 3. Run Tests (Unit, Integration, and E2E)
-        # We pass base-url so Playwright knows where the app is
+        # 3. Run pytest, passing the base_url for E2E tests.
         pytest --base-url http://localhost:8000
 
   # ---------------------------------
@@ -88,5 +85,6 @@ jobs:
         context: .
         file: ./Dockerfile
         push: true
-        # --- UPDATED TAG FOR MODULE 13 ---
+        
+        # UPDATED TAG FOR MODULE 13
         tags: sm3777/module13-fastapi-frontend:latest
