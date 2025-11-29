@@ -56,8 +56,8 @@ jobs:
         # 1. Start the FastAPI app in the background (using corrected module name)
         uvicorn main:app --host 0.0.0.0 --port 8000 & 
         
-        # 2. Wait a few seconds for the app to start up
-        sleep 5
+        # 2. WAIT 15 SECONDS FOR STABILITY (Final Fix)
+        sleep 15
         
         # 3. Run pytest, passing the base_url for E2E tests.
         pytest --base-url http://localhost:8000
@@ -86,5 +86,5 @@ jobs:
         file: ./Dockerfile
         push: true
         
-        # UPDATED TAG FOR MODULE 13
+        # This tag is for Module 13
         tags: sm3777/module13-fastapi-frontend:latest
